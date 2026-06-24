@@ -1,35 +1,33 @@
 import requests
-from bs4 import BeautifulSoup as bs
-import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Weather App")
-
-st.title("Weather Scraper App")
+st.title("🌤 Weather Scraper App")
 
 city = st.text_input("Enter City", "London")
 
 if st.button("Get Weather"):
 
-    url = f"https://wttr.in/{city}"
+    url = f"https://wttr.in/{city}?format=j1"
 
     response = requests.get(url)
 
     if response.status_code == 200:
 
-        soup = bs(response.text, "html.parser")
+        data = response.json()
 
-        weather_data = [{
-            "City": city,
-            "Status": "Weather data fetched successfully"
-        }]
+        current = data["current_condition"][0]
 
-        weather_df = pd.DataFrame(weather_data)
+        temp = current["temp_C"]
+        humidity = current["humidity"]
+        wind = current["windspeedKmph"]
+        condition = current["weatherDesc"][0]["value"]
 
-        st.subheader("Weather Information")
-        st.dataframe(weather_df)
+        st.subheader(f"Weather in {city}")
 
-        st.text(response.text[:1000])  # Shows first part of weather report
+        st.write(f"🌡 Temperature: {temp} °C")
+        st.write(f"☁ Condition: {condition}")
+        st.write(f"💧 Humidity: {humidity}%")
+        st.write(f"💨 Wind Speed: {wind} km/h")
 
     else:
-        st.error("Could not fetch weather data.")
+        st.error("Failed to fetch weather data.")
